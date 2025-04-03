@@ -200,6 +200,43 @@ newFunction();    // Window {}
 
 ### Explicit binding | Indirect invocation
 In this method, we can force a function to use a certain object as its this. Explicit binding call(), apply(), and bind(). call(): Pass in the required object as the first parameter during the function call. The actual parameters are passed after the object. apply(): Similar to call() with a difference in the way the actual arguments are passed. Here, the actual arguments are passed as an array. bind(): In this method, you create a new function with a fixed this. These types of functions created using bind() are commonly known as bound functions.
+
+#### Function.prototype.call()
+* Syntax 
+call(thisArg)
+call(thisArg, arg1)
+call(thisArg, arg1, arg2, /*...,*/, argN)
+
+#### Function.prototype.apply()
+* Syntax
+apply(thisArg)
+apply(thisArg, argsArray)
+
+thisArgs -> the value of this provide for the call to function. If the function is not in "strict mode", "nuill" and "undefined" will be replace with global object.
+
+Do not use call(), apply()  to chain constructors (for example, to implement inheritance). This invokes constructor function as plain function, which means new.target. is undefined
+
+#### Function.prototype.bind()
+* Syntax
+bind(thisArg, arg1, arg2, /* …, */ argN)
+
+#### More Example
+```javascript
+const numbers = [5, 6, 2, 3, 7];
+
+const max = Math.max.apply(null, numbers);
+
+console.log(max);
+// Expected output: 7
+
+const min = Math.min.apply(null, numbers);
+
+console.log(min);
+// Expected output: 2
+```
+
+#### More Examples
+
 ```javascript
 function myFunction(param1, param2) {
     console.log(this)     
@@ -298,6 +335,8 @@ objA.inner()                    // Window {}
 myFunction.call(objB);          // Window {}
 const objC = new myFunction()   // myFunction is not a constructor
 ```
+
+
 
 ## Web Resource - Event Loop
 Visualize Javascript event loop, call stack, queues (including the microtask queue), and related concepts:-
