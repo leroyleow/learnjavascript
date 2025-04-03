@@ -139,6 +139,166 @@ Here's a breakdown of how these components work together:
     console.log("End");
 ```
 
+## this
+In layman’s terms, this points to the owner of the function call, I repeat, the function call, and NOT the function itself. 
+The same function can have different owners in different scenarios. The 4 rules 
+
+### 1. Default binding | Direct invocation
+```javascript
+function myFunction() {
+    console.log(this)
+}
+myFunction();           // Window {}
+```
+### 2. Implict binding | Method invocation
+```javascript
+function myFunction() {
+    console.log(this)     
+  }
+ 
+const obj = {
+  someKey: 1, 
+  myFunction: myFunction,
+}
+
+obj.myFunction();   
+// {someKey: 1, myFunction: ƒ}. ie. obj
+```
+
+### 2a.Nested Function
+When a function is nested inside a method of an object, the context of the inner function depends only on its invocation type and not on the outer function’s context.
+
+```javascript
+const obj = {
+  someKey: 1, 
+  outer: function() {
+    function inner(){
+       console.log(this);
+    }     
+    inner();
+  },
+}
+
+obj.outer();      // Window {}
+```
+
+### 2b. Method separated from the object
+When we copy an object method to a new variable, we are creating a reference to the function.
+```javascript
+function myFunction() {
+  console.log(this);
+}
+
+const obj = {
+  someKey: 1,
+  myFunction: myFunction,
+}
+
+const newFunction = obj.myFunction;
+newFunction();    // Window {}
+```
+
+### Explicit binding | Indirect invocation
+In this method, we can force a function to use a certain object as its this. Explicit binding call(), apply(), and bind(). call(): Pass in the required object as the first parameter during the function call. The actual parameters are passed after the object. apply(): Similar to call() with a difference in the way the actual arguments are passed. Here, the actual arguments are passed as an array. bind(): In this method, you create a new function with a fixed this. These types of functions created using bind() are commonly known as bound functions.
+```javascript
+function myFunction(param1, param2) {
+    console.log(this)     
+  }
+ 
+const obj = {
+  someKey: 1, 
+}
+
+const param1 = 1, param2 = 2;
+myFunction.call(obj, param1, param2)       // {someKey: 1}
+myFunction.apply(obj, [param1, param2])    // {someKey: 1}
+
+const boundFunction = myFunction.bind(obj);
+boundFUnction();    //{someKey: 1}
+```
+
+### New Binding | Constructor invocation
+#### 4a. Function without Return
+```javascript
+function myFunction(){
+  // JS internally creates an object and refers it as this
+  
+  // User explicitly adds required properties and methods to the object
+  this.someKey = 1;
+  this.inner = function(){
+    console.log(this);
+  }
+  
+  // JS internally returns the object
+}
+
+const obj = new myFunction();
+obj.inner()           // {someKey: 1, inner: ƒ} with myFunction prototype
+```
+
+#### 4b Function with Return
+```javascript
+function myFunction(){
+  return {
+    someKey: 1,
+  }
+}
+
+const obj = new myFunction();
+console.log(obj);    // {someKey: 1} without myFunction prototype
+```
+
+## Arrow Functions
+Arrow functions use “lexical scoping” to figure out what the value of this should be. Lexical scoping is a fancy way of saying it uses “this” from the outer function in which it is defined.
+Simply put, when an arrow function is invoked, JS literally takes the this value from the outer function where the arrow function is declared. I repeat, the outer function, NOT the outer object in which it is defined.
+
+a. If the outer function is a normal function, this depends upon the type of binding of the outer function.
+
+b. If the outer function is an arrow function, JS again checks for the next outer function and this process continues till the global object.
+
+```javascript
+function outer(){ 
+    let inner = () => { 
+      console.log(this);
+    };
+    inner()
+  } 
+
+const objA = {
+  someKey: 1,
+  outer : outer, 
+};
+const objB = {
+  someKey: 2,
+}
+
+// In this example, each time when inner function is called, 
+// JS simply takes the this value from outer function
+outer();            // Window {}
+objA.outer();       // {someKey: 1, outer: ƒ} --> objA
+outer.call(objB)    // {someKey: 2} --> objB
+```
+```javascript
+const myFunction = () => {
+  console.log(this);
+}
+
+const objA = {
+  myFunction: myFunction,
+  inner: () => {
+    console.log(this);
+  }
+}
+
+const objB = {}
+
+myFunction();                   // Window {}
+objA.myFunction()               // Window {}
+objA.inner()                    // Window {}
+myFunction.call(objB);          // Window {}
+const objC = new myFunction()   // myFunction is not a constructor
+```
+
 ## Web Resource - Event Loop
 Visualize Javascript event loop, call stack, queues (including the microtask queue), and related concepts:-
 1. Loupe by Philip Roberts:
